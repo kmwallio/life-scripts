@@ -1,13 +1,15 @@
 #!/usr/bin/perl
 
+use strict;
+use warnings;
+use Digest::SHA1 qw(sha1_hex);
+
 #
 # epub [file_name]
 #
 # Quickly generates an epub from numbered markdown files in the
 # current directory.  Doesn't do any recursion or anything fancy
 #
-
-use Digest::SHA1 qw(sha1_hex);
 
 my @chapters;
 
@@ -29,7 +31,7 @@ my $text = "";
 
 foreach my $chapter (@chapters) {
 	open (CHAP, "<", $chapter);
-	while ($line = <CHAP>) {
+	while (my $line = <CHAP>) {
 		$text .= $line . "";
 	}
 	$text .= "\n\n";
@@ -39,11 +41,11 @@ foreach my $chapter (@chapters) {
 my $book_file = sha1_hex($text).'.md';
 my $book_epub = sha1_hex($text).'.epub';
 
-$num_args = $#ARGV + 1;
+my $num_args = $#ARGV + 1;
 if ($num_args == 1) {
-	$book_docx = shift(@ARGV);
-	unless ($book_docx =~ m/epub/i) {
-		$book_docx .= ".epub";
+	$book_epub = shift(@ARGV);
+	unless ($book_epub =~ m/epub$/i) {
+		$book_epub .= ".epub";
 	}
 }
 
@@ -55,4 +57,5 @@ close (BOOK);
 
 unlink($book_file);
 
-`open $book_epub`;
+print "Compiled:\n";
+print "  $book_epub\n";

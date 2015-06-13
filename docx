@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+use strict;
+use warnings;
 use Digest::SHA1 qw(sha1_hex);
 
 #
@@ -29,7 +31,7 @@ my $text = "";
 
 foreach my $chapter (@chapters) {
 	open (CHAP, "<", $chapter);
-	while ($line = <CHAP>) {
+	while (my $line = <CHAP>) {
 		$text .= $line . "";
 	}
 	$text .= "\n\n";
@@ -39,7 +41,7 @@ foreach my $chapter (@chapters) {
 my $book_file = sha1_hex($text).'.md';
 my $book_docx = sha1_hex($text).'.docx';
 
-$num_args = $#ARGV + 1;
+my $num_args = $#ARGV + 1;
 if ($num_args == 1) {
 	$book_docx = shift(@ARGV);
 	unless ($book_docx =~ m/docx$/i) {
@@ -55,4 +57,5 @@ close (BOOK);
 
 unlink($book_file);
 
-`open $book_docx`;
+print "Compiled:\n";
+print "  $book_docx\n";
