@@ -1,0 +1,58 @@
+#!/usr/bin/perl
+
+#
+# epub [file_name]
+#
+# Quickly generates an epub from numbered markdown files in the
+# current directory.  Doesn't do any recursion or anything fancy
+#
+
+use Digest::SHA1 qw(sha1_hex);
+
+my @chapters;
+
+opendir (DIR, './');
+foreach my $file (sort(grep(!/^\./, readdir(DIR)))) {
+	if ($file =~ m/^\d(.*?)\.(md|markdown|txt)/i) {
+		push (@chapters, $file);
+	}
+}
+closedir (DIR);
+
+sort(@chapters);
+
+print "Compiling\n  ";
+print join ("\n  ", @chapters);
+print "\n";
+
+my $text = "";
+
+foreach my $chapter (@chapters) {
+	open (CHAP, "<", $chapter);
+	while ($line = <CHAP>) {
+		$text .= $line . "";
+	}
+	$text .= "\n\n";
+	close(CHAP);
+}
+
+my $book_file = sha1_hex($text).'.md';
+my $book_epub = sha1_hex($text).'.epub';
+
+$num_args = $#ARGV + 1;
+if ($num_args == 1) {
+	$book_docx = shift(@ARGV);
+	unless ($book_docx =~ m/epub/i) {
+		$book_docx .= ".epub";
+	}
+}
+
+open (BOOK, ">>", $book_file);
+print BOOK $text;
+close (BOOK);
+
+`pandoc $book_file -o $book_epub`;
+
+unlink($book_file);
+
+`open $book_epub`;

@@ -1,0 +1,58 @@
+#!/usr/bin/perl
+
+use Digest::SHA1 qw(sha1_hex);
+
+#
+# docx [file_name]
+#
+# Quickly generates a docx from numbered markdown files in the
+# current directory.  Doesn't do any recursion or anything fancy
+#
+
+my @chapters;
+
+opendir (DIR, './');
+foreach my $file (sort(grep(!/^\./, readdir(DIR)))) {
+	if ($file =~ m/^\d(.*?)\.(md|markdown|txt)$/i) {
+		push (@chapters, $file);
+	}
+}
+closedir (DIR);
+
+sort(@chapters);
+
+print "Compiling\n  ";
+print join ("\n  ", @chapters);
+print "\n";
+
+my $text = "";
+
+foreach my $chapter (@chapters) {
+	open (CHAP, "<", $chapter);
+	while ($line = <CHAP>) {
+		$text .= $line . "";
+	}
+	$text .= "\n\n";
+	close(CHAP);
+}
+
+my $book_file = sha1_hex($text).'.md';
+my $book_docx = sha1_hex($text).'.docx';
+
+$num_args = $#ARGV + 1;
+if ($num_args == 1) {
+	$book_docx = shift(@ARGV);
+	unless ($book_docx =~ m/docx$/i) {
+		$book_docx .= ".docx";
+	}
+}
+
+open (BOOK, ">>", $book_file);
+print BOOK $text;
+close (BOOK);
+
+`pandoc $book_file -o $book_docx`;
+
+unlink($book_file);
+
+`open $book_docx`;
