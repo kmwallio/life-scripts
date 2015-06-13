@@ -6,7 +6,8 @@ This is a collection of scripts to hopefully make my life easier...  Hopefully..
 
 1. Install [homebrew](http://brew.sh)
 2. Install pandoc `brew install pandoc`
-3. Live happy
+3. Clone project and add into your path
+4. Live happy
 
 # Scripts
 
