@@ -1,0 +1,56 @@
+#!/usr/bin/perl 
+
+use strict;
+use warnings;
+use LWP::Simple qw(get);
+use HTTP::Tiny;
+
+my $url = 'https://google.com/search?q=';
+#my $url = 'http://1.6km.me';
+my $html;# = get $url;
+
+$url.= join("+", @ARGV);
+
+my $response = HTTP::Tiny->new->get($url);
+if ($response->{success}) {
+	$html = $response->{content};
+	#print $html;
+} else {
+	die "Failed: $response->{status} $response->{reasons}";
+}
+
+my $i = 1;
+
+while ($html =~ m/<h3 class="r">.*?<a.*?href="\/(search|url)\?q=(.*?)&amp.*?">(.*?)<\/a><\/h3>/g) {
+	my $title = $3;
+	my $url = $2;
+	$title =~ s/<img.*?\/?>//g;
+	$title =~ s/<.*?>(.*?)<\/.*?>/$1/g;
+	print $i . ". " . $title . "\n";
+	$i++;
+}
+
+print "Go to: ";
+
+my $g = <STDIN>;
+
+$i = 1;
+
+while ($html =~ m/<h3 class="r">.*?<a.*?href="\/(search|url)\?q=(.*?)">(.*?)<\/a><\/h3>/g) {
+	my $title = $3;
+	my $url = $2;
+	my $type = $1;
+
+	if ($type eq "search") {
+		$url = "http://www.google.com/search?q=" . $url;
+		$url =~ s/&amp;/&/gi;
+	} else {
+		$url =~ s/(.*?)&amp;.*?$/$1/;
+	}
+
+	if ($g == $i) {
+		print "Opening " . $url . "\n";
+		`open $url`;
+	}
+	$i++;
+}
